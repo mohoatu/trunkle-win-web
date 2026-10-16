@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation - Table Audit &amp; Export for Confluence</title>
+<style>body{max-width:42em;margin:0 auto;padding:1em 1.25em;font:17px/1.6 system-ui,sans-serif;color:#1d1d1d}h1{font-size:1.5em;line-height:1.3}h2{font-size:1.15em;margin-top:2em}h3{font-size:1em;margin-top:1.6em}code{background:#f2f2f2;padding:.1em .3em;border-radius:3px;font-size:.92em}ol,ul{padding-left:1.3em}li{margin:.35em 0}table{border-collapse:collapse;margin:1em 0;width:100%}th,td{border:1px solid #ddd;padding:.45em .6em;text-align:left;vertical-align:top;font-size:.95em}th{background:#f7f7f7}hr{margin:2.5em 0 1em;border:0;border-top:1px solid #ddd}</style>
+</head>
+<body>
+<h1>Table Audit &amp; Export for Confluence — documentation</h1>
+
+<p>Table Audit &amp; Export reads every table on a Confluence page or blog post, checks the
+numbers and dates inside them, and exports the tables to a real Excel (.xlsx) file.</p>
+
+<p>There is nothing to configure. The app has no settings page, no account, and no
+server-side component.</p>
+
+<h2>1. Installing the app</h2>
+
+<ol>
+<li>In Confluence, open <b>Apps → Explore more apps</b>, or go to the app's listing on
+the Atlassian Marketplace.</li>
+<li>Search for <b>Table Audit &amp; Export</b> and install it into your site. A
+Confluence administrator must approve the installation.</li>
+<li>The app asks for one permission: <code>read:page:confluence</code> (read access to
+page content). It cannot modify pages, and cannot reach spaces, users, attachments or
+any other Confluence data.</li>
+</ol>
+
+<p>After installation there is no setup step. The app appears on every page and blog
+post for every user who can view them.</p>
+
+<h2>2. Running an audit, step by step</h2>
+
+<ol>
+<li>Open any Confluence <b>page</b> or <b>blog post</b> that contains at least one
+table.</li>
+<li>Click the <b>•••</b> (more actions) menu at the top right of the page.</li>
+<li>Choose <b>Table Audit &amp; Export</b>.</li>
+<li>A full-screen dialog opens. It shows <i>Opening…</i>, then <i>Reading this page…</i>,
+then <i>Checking the tables…</i>. Large tables can take a few seconds.</li>
+<li>The results appear. Read them in the dialog, and/or click
+<b>Download .xlsx</b> to save the spreadsheet.</li>
+<li>Close the dialog when you are done. Nothing is saved to the page, and the page is
+not modified in any way.</li>
+</ol>
+
+<p>You do not need to edit the page, select the table, or put a macro on it. The app
+reads the page as it is published.</p>
+
+<h2>3. Reading the results</h2>
+
+<p>The dialog opens with one summary line, for example
+<i>“Found 3 tables on this page; 2 of them have problems worth fixing before the data
+is reused.”</i> Each table then gets its own section.</p>
+
+<p>Findings are <b>grouped by column</b> rather than listed cell by cell, so a 500-row
+table produces a report you can read in under a minute instead of a thousand separate
+lines.</p>
+
+<p>Every finding states three things:</p>
+
+<ul>
+<li><b>What</b> is wrong — using the real values from your table, not a generic
+example.</li>
+<li><b>Where</b> — the column and the affected cell range.</li>
+<li><b>Why it matters</b> — what will go wrong if the data is reused as it is.</li>
+</ul>
+
+<p>Each finding carries one of three labels:</p>
+
+<table>
+<tr><th>Label</th><th>Meaning</th></tr>
+<tr><td><b>Must fix</b></td><td>The table states something that is arithmetically wrong,
+or a value that will be read as the wrong thing by a spreadsheet.</td></tr>
+<tr><td><b>Should fix</b></td><td>The data is usable but will cause trouble when sorted,
+summed or copied elsewhere.</td></tr>
+<tr><td><b>Worth a look</b></td><td>Worth a human glance; often legitimate.</td></tr>
+</table>
+
+<p>When the app cannot tell which of two readings is correct, it says so and shows you
+both. It will stay quiet rather than invent a problem.</p>
+
+<h2>4. What the app checks</h2>
+
+<h3>On order, quote and invoice tables</h3>
+<ul>
+<li><b>Line total does not match</b> — quantity × unit price does not equal the line
+total.</li>
+<li><b>Total does not match</b> — a total row does not equal the lines above it.</li>
+<li><b>Tax does not match its rate</b> — a tax line that disagrees with the rate the
+table itself states, for example 10% of 2,530,000 written as 250,000.</li>
+</ul>
+<p>Subtotal, tax, discount and fee rows are checked against the stated total. Rounding
+is tolerated within the precision the table itself is written in, so a table rounded to
+the thousand is not reported for rounding.</p>
+
+<h3>On any table</h3>
+<ul>
+<li><b>Ambiguous dates</b> — “04/02/2025” is 4 February in the UK and Vietnam, 2 April
+in the US.</li>
+<li><b>Mixed date formats</b> — a column that cannot be sorted as dates.</li>
+<li><b>Mixed units</b> — kg with lb with g in one column, which cannot be added up.</li>
+<li><b>Ambiguous number separator</b> — “1,410” means one thousand four hundred and ten
+in one spreadsheet locale and 1.41 in another.</li>
+<li><b>Mixed currency marks</b> — only some amounts in a column carry a currency
+sign.</li>
+<li><b>Negative values</b> — prices, quantities or weights below zero.</li>
+<li><b>Empty cells</b> — which totals and averages skip in silence.</li>
+<li><b>Duplicate IDs</b> — rows that cannot be looked up unambiguously.</li>
+</ul>
+
+<p>Column headings are recognised in <b>English, Vietnamese and German</b>.</p>
+
+<h2>5. The exported spreadsheet</h2>
+
+<p>Clicking <b>Download .xlsx</b> builds the file in your browser and saves it through
+your browser's normal download. The file name is taken from the page title, for example
+<code>Q3 plan - table audit.xlsx</code>.</p>
+
+<p>The workbook contains:</p>
+
+<ul>
+<li><b>One sheet per table</b> — the table's data, with dates written as real Excel
+dates and numbers as real numbers, ready to sort and sum.</li>
+<li><b>An Issues sheet</b> — one row per problem, giving the affected cell range and
+example values, plus an internal code in the last column.</li>
+</ul>
+
+<p>A value that could be read more than one way is exported as <b>text</b> rather than
+being quietly converted into the wrong number. This is deliberate: a wrong conversion is
+harder to notice than a cell that stayed text.</p>
+
+<p>There are no macros in the file.</p>
+
+<h2>6. Where your data goes</h2>
+
+<p>Nowhere. Everything runs inside your browser.</p>
+
+<p>The page content is requested from Atlassian's own API and checked on your machine.
+There is no server of ours in the path, because there isn't one at all. There is no AI
+model in this app, no account to create, no analytics, no cookies, and nothing to opt
+out of.</p>
+
+<p>Full detail: <a href="privacy.html">privacy policy</a>.</p>
+
+<h2>7. Known limits</h2>
+
+<ul>
+<li>The app reads the tables on a single page or blog post at a time. It does not crawl
+a space.</li>
+<li>Tables inside an <b>expand</b> are read; the report tells you when a table came from
+one.</li>
+<li>The app reads the published page. Unsaved edits in the editor are not visible to
+it.</li>
+<li>Values that could be read more than one way are exported as text rather than
+converted, on purpose (see section 5).</li>
+<li>The app does not write to your page, and cannot fix anything for you. It reports;
+you decide.</li>
+</ul>
+
+<h2>8. Troubleshooting</h2>
+
+<h3>“This page has no tables.”</h3>
+<p>The app checks tables in the page body. Open a page or blog post that contains a
+table. Note that a table pulled in by another macro at view time may not be part of the
+page body.</p>
+
+<h3>The dialog shows an error with a “Try again” button</h3>
+<p>Click <b>Try again</b>. If it keeps failing, reload the Confluence page first — a
+stale browser session is the most common cause.</p>
+
+<h3>“The file could not be created in this browser”</h3>
+<p>Nothing was downloaded. Try again, or open the page in another browser. The file is
+built in the browser, so a browser extension that blocks downloads or object URLs can
+prevent it.</p>
+
+<h3>The app is not in the ••• menu</h3>
+<p>Confirm with your Confluence administrator that the app is installed and enabled for
+your site. The app appears on pages and blog posts, not on other content types.</p>
+
+<h2>9. Reporting a problem</h2>
+
+<p>Email <a href="mailto:support@trunkle.win">support@trunkle.win</a>. We reply within
+two business days. Each screen in the app also carries a feedback link that opens a
+pre-addressed email.</p>
+
+<p>Please include what you clicked and what happened, a screenshot of the app window if
+it showed an error, and roughly how many rows and columns the table has.</p>
+
+<p><b>Please do not send us the contents of your table.</b> We do not need it, and we
+would rather not receive it.</p>
+
+<hr>
+<p>Table Audit &amp; Export for Confluence |
+<a href="support.html">Support</a> |
+<a href="privacy.html">Privacy policy</a> |
+<a href="mailto:support@trunkle.win">support@trunkle.win</a></p>
+</body>
+</html>

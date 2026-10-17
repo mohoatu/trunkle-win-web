@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Policy - Table Audit &amp; Export for Confluence</title>
+<style>body{max-width:42em;margin:0 auto;padding:1em 1.25em;font:17px/1.6 system-ui,sans-serif;color:#1d1d1d}h1{font-size:1.5em;line-height:1.3}h2{font-size:1.15em;margin-top:2em}h3{font-size:1em;margin-top:1.5em}code{background:#f2f2f2;padding:.1em .3em;border-radius:3px;font-size:.92em}ul{padding-left:1.3em}li{margin:.35em 0}table{border-collapse:collapse;margin:1em 0;width:100%}th,td{border:1px solid #ddd;padding:.45em .6em;text-align:left;vertical-align:top;font-size:.95em}th{background:#f7f7f7}hr{margin:2.5em 0 1em;border:0;border-top:1px solid #ddd}.meta{color:#555;font-size:.95em}</style>
+</head>
+<body>
+<h1>Security Policy — Table Audit &amp; Export for Confluence</h1>
+
+<p class="meta">Vendor: Le Hoang Quang Trung (sole proprietor), Da Nang, Vietnam.<br>
+Security contact: <a href="mailto:support@trunkle.win">support@trunkle.win</a><br>
+Version 1.0 — 13 October 2026. Reviewed annually, and after any security incident.</p>
+
+<p>This page describes the security practices for this app. It is separate from the
+<a href="privacy.html">privacy policy</a>, which describes what we do with personal
+data.</p>
+
+<h2>1. Security model</h2>
+
+<p>The app has <b>no backend, no database and no network egress</b>. It is a Forge
+Custom UI app whose static files are served by Atlassian's own infrastructure. Page
+content is requested from Atlassian's API, checked inside the user's browser, and the
+spreadsheet is built there too.</p>
+
+<p>The consequence is deliberate and is the most important control in this system:
+there is no server of ours to breach, no database to leak, and <b>no customer data at
+rest anywhere</b>. Any security incident involving this app is therefore a question of
+code integrity or account access, not of a data breach.</p>
+
+<h2>2. Data handling</h2>
+
+<table>
+<tr><th>Data</th><th>Where it lives</th><th>Retention</th></tr>
+<tr><td>Customer page and table content</td><td>The user's browser, for the few seconds
+the app runs</td><td>None. Never transmitted to us, never stored.</td></tr>
+<tr><td>The exported .xlsx file</td><td>Built in the browser, saved by the browser</td>
+<td>Held by the customer only. Never uploaded.</td></tr>
+<tr><td>Source code</td><td>Private repository</td><td>Contains no customer data.</td></tr>
+<tr><td>Publishing credentials</td><td>The developer's workstation</td><td>Rotated when
+no longer needed.</td></tr>
+</table>
+
+<p>We collect no analytics, no telemetry, no error reports and no usage statistics. We
+set no cookies. There are no user accounts. There is no AI model in this app, and no
+data is sent to any third party, because we hold none to send.</p>
+
+<p>Support requests arrive by email. We ask customers <b>not</b> to send table contents
+with a report, and we do not need them in order to help.</p>
+
+<h2>3. Encryption</h2>
+
+<ul>
+<li><b>In transit:</b> all traffic is HTTPS/TLS. The app's static resources are served
+over TLS by Atlassian, and its one API call goes from the user's browser to Atlassian's
+API over TLS. No part of that path involves us.</li>
+<li><b>At rest:</b> not applicable to customer data, because no customer data is ever
+stored by this app or by us.</li>
+<li><b>Credentials</b> used to publish the app are held in the vendor's own credential
+storage and are never committed to the repository. An automated test asserts that the
+shipped bundle contains no secrets.</li>
+</ul>
+
+<h2>4. Access control</h2>
+
+<ul>
+<li>Multi-factor authentication is enabled on the source-code hosting account and on
+the Atlassian account used to publish the app.</li>
+<li>No third party has access to the source repository, the Atlassian partner account
+or the domain.</li>
+<li>API tokens are created with the narrowest scope that works and revoked when no
+longer needed.</li>
+<li>The app itself requests exactly one Atlassian scope, <code>read:page:confluence</code>,
+and is read-only. It cannot modify pages, and cannot reach spaces, users, attachments or
+any other Confluence data. This limit is enforced by the Forge platform.</li>
+</ul>
+
+<h2>5. Secure development</h2>
+
+<ul>
+<li>No release ships without the full automated test suite passing — 724 checks — plus
+a mutation suite in which 125 deliberate faults are injected one at a time, each of
+which must be caught by a test.</li>
+<li>The user interface is built with DOM calls only: no <code>innerHTML</code>, no
+inline script and no inline styles. An automated test asserts this on every build, so
+the Custom UI content-security constraints cannot be weakened by accident.</li>
+<li>Third-party code is kept to a minimum by design. The only direct runtime dependency
+is Atlassian's own <code>@forge/bridge</code>. The .xlsx writer is hand-written rather
+than taken from a library, specifically to avoid shipping third-party code into a
+customer's browser.</li>
+<li>Changes are tested in the Forge <code>development</code> environment before any
+production release.</li>
+</ul>
+
+<h2>6. Vulnerability management</h2>
+
+<p><code>npm audit</code> is run before every release and the results are recorded. A
+finding that cannot be fixed without a breaking change is documented together with an
+assessment of whether the vulnerable code is reachable in the shipped bundle.</p>
+
+<p>Atlassian's Security Bug Fix Policy sets our remediation deadlines, and we treat
+them as hard commitments:</p>
+
+<table>
+<tr><th>Severity</th><th>CVSS</th><th>Fixed within</th></tr>
+<tr><td>Critical</td><td>&ge; 9.0</td><td>10 days</td></tr>
+<tr><td>High</td><td>&ge; 7.0</td><td>4 weeks</td></tr>
+<tr><td>Medium</td><td>&ge; 4.0</td><td>12 weeks</td></tr>
+<tr><td>Low</td><td>&lt; 4.0</td><td>25 weeks</td></tr>
+</table>
+
+<p>A vulnerability report takes priority over all feature work, without exception.</p>
+
+<h3>Reporting a vulnerability</h3>
+
+<p>Email <a href="mailto:support@trunkle.win">support@trunkle.win</a>, or raise a ticket
+in the Atlassian Marketplace Security (AMS) project. We acknowledge a report within one
+working day. Please include the steps to reproduce; please do not include customer data.</p>
+
+<h2>7. Incident response</h2>
+
+<p>A written incident response plan is maintained. Its commitments:</p>
+
+<ul>
+<li><b>Contain first.</b> On a suspected credential compromise, passwords are changed and
+all tokens and sessions revoked before anything else is attempted.</li>
+<li><b>Notify without waiting for a fix.</b> Atlassian is informed as soon as an incident
+is confirmed, through the AMS project. Affected customers are informed by email from
+<code>support@trunkle.win</code> once the impact is understood, and before the public
+knows.</li>
+<li><b>Notifications state facts:</b> what happened, when, which app versions, what data
+could have been affected, what the customer needs to do, and what prevents a repeat. No
+speculation, and no minimising.</li>
+<li><b>Afterwards,</b> the preventive change is written as an automated test wherever it
+can be, rather than as a resolution to be more careful.</li>
+</ul>
+
+<h2>8. What this policy does not claim</h2>
+
+<p>Stated plainly, because an overclaiming security policy is worse than none:</p>
+
+<ul>
+<li><b>No security certifications.</b> We hold no SOC 2, ISO 27001, or equivalent
+attestation, and we are not currently pursuing one.</li>
+<li><b>No penetration test and no bug bounty programme.</b></li>
+<li><b>No backups of customer data</b>, because none is held.</li>
+<li><b>No 24/7 response.</b> The realistic response window is within one working day.</li>
+<li><b>No separation of duties.</b> The vendor is one person; there is no second reviewer
+on a code change. What reduces the risk here is the architecture described in section 1,
+not process.</li>
+<li><b>The incident plan has not yet been rehearsed.</b> The first annual rehearsal is
+scheduled; until it has happened, the honest answer to "do you test your incident plan
+annually" is no.</li>
+</ul>
+
+<p>These are consequences of the size of the business, not oversights, and they are
+reviewed as it grows.</p>
+
+<hr>
+<p>Table Audit &amp; Export for Confluence |
+<a href="docs.html">Documentation</a> |
+<a href="support.html">Support</a> |
+<a href="privacy.html">Privacy policy</a> |
+<a href="mailto:support@trunkle.win">support@trunkle.win</a></p>
+</body>
+</html>

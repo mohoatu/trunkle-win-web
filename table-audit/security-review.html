@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Review - Table Audit &amp; Export for Confluence</title>
+<style>body{max-width:42em;margin:0 auto;padding:1em 1.25em;font:17px/1.6 system-ui,sans-serif;color:#1d1d1d}h1{font-size:1.5em;line-height:1.3}h2{font-size:1.15em;margin-top:2em}h3{font-size:1em;margin-top:1.5em}code{background:#f2f2f2;padding:.1em .3em;border-radius:3px;font-size:.92em}pre{background:#f7f7f7;padding:.8em;border-radius:4px;overflow-x:auto;font-size:.88em;line-height:1.45}ul{padding-left:1.3em}li{margin:.35em 0}table{border-collapse:collapse;margin:1em 0;width:100%}th,td{border:1px solid #ddd;padding:.45em .6em;text-align:left;vertical-align:top;font-size:.95em}th{background:#f7f7f7}hr{margin:2.5em 0 1em;border:0;border-top:1px solid #ddd}.meta{color:#555;font-size:.95em}.sev{font-weight:700}.med{color:#a8431f}.low{color:#6b6b1f}.info{color:#555}.ok{color:#1f6b3a}.box{border:1px solid #ddd;border-left:4px solid #999;padding:.8em 1em;margin:1.2em 0;background:#fafafa}</style>
+</head>
+<body>
+<h1>Security Review — Table Audit &amp; Export for Confluence</h1>
+
+<p class="meta">Reviewer: Le Hoang Quang Trung.<br>
+Target: Table Audit &amp; Export for Confluence, Forge Custom UI app.<br>
+Method: white-box source code review.<br>
+Version 1.0 — 31 October 2026.</p>
+
+<div class="box">
+<p><b>Read this first.</b> I am the author of the application I am reviewing. This is a
+self-audit, and a self-audit is weaker evidence than an independent one. I am publishing
+it anyway for two reasons: a customer deciding whether to install this app is entitled to
+see what I found when I went looking, and anyone considering hiring me to review their
+code can see the method and the writing before they pay for it.</p>
+<p>It is not a penetration test. No certification stands behind it. Section 7 states the
+limits in full.</p>
+</div>
+
+<h2>1. Executive summary</h2>
+
+<p>The application has no backend, no database and no network egress of its own. I
+verified that claim against the source rather than taking it from the policy: outside
+Atlassian's own bridge call there is no <code>fetch</code>, no
+<code>XMLHttpRequest</code>, and no storage or analytics API anywhere in the shipped
+code. The architecture removes the categories of risk that normally dominate a review of
+a SaaS add-on. There is no server of mine to breach and no customer data at rest.</p>
+
+<p>I found <b>no exploitable vulnerability</b> in the application code.</p>
+
+<p>I did find <b>five issues</b>, and the most serious of them is not in the code. It is
+in my own published security policy, which claims two automated controls that do not
+exist. For a vendor whose argument to customers is that its claims are checkable, a
+claim that is not true is the worst defect available. It is listed first on purpose.</p>
+
+<table>
+<tr><th>ID</th><th>Finding</th><th>Severity</th><th>Status</th></tr>
+<tr><td>F-01</td><td>Security policy claims two automated controls that are not implemented</td><td class="sev med">Medium</td><td class="ok"><b>Resolved</b> 31 Oct 2026</td></tr>
+<tr><td>F-02</td><td>Licensing is enabled but the licence state is never checked</td><td class="sev med">Medium</td><td>Open</td></tr>
+<tr><td>F-03</td><td>No upper bound on client-side work for a very large page</td><td class="sev low">Low</td><td>Open</td></tr>
+<tr><td>F-04</td><td>DOM helper assigns arbitrary property names (latent sink)</td><td class="sev low">Low</td><td>Open</td></tr>
+<tr><td>F-05</td><td>Published automated-check count had drifted from the suite</td><td class="sev info">Informational</td><td>Partly resolved</td></tr>
+</table>
+
+<p>This document records the state at the time of review and the retest that followed.
+F-01 was fixed the same day, and the fix was verified rather than assumed; the finding is
+left in place rather than deleted, because a review that quietly removes what it found is
+not a review.</p>
+
+<h2>2. Scope</h2>
+
+<ul>
+<li><b>In scope:</b> the Forge manifest, the Custom UI front end
+(<code>app/static/ui/src/</code>), and the shared logic it imports
+(<code>core/</code>) — the ADF table reader, the defect detectors, and the hand-written
+.xlsx writer.</li>
+<li><b>Out of scope:</b> the Atlassian Forge platform itself, Confluence, and the
+transitive dependency tree beyond the direct dependencies named in section 6.</li>
+<li><b>Not performed:</b> dynamic testing against a live Confluence site, penetration
+testing, fuzzing, and any form of authenticated attack simulation.</li>
+</ul>
+
+<h2>3. What the architecture rules out</h2>
+
+<p>Most of the value here is negative space, so it is worth stating what is <i>absent</i>
+and how I confirmed it.</p>
+
+<table>
+<tr><th>Property</th><th>How it was verified</th></tr>
+<tr><td>No egress from the app</td><td>No <code>fetch</code>, <code>XMLHttpRequest</code>, <code>sendBeacon</code> or WebSocket in <code>app/static/ui/src/</code> or <code>core/</code>. The only network call in the codebase is <code>requestConfluence</code>, imported from <code>@forge/bridge</code>, which reaches Atlassian's API and nothing else.</td></tr>
+<tr><td>No code evaluation</td><td>No <code>eval</code>, <code>new Function</code>, <code>document.write</code>, <code>insertAdjacentHTML</code> or <code>srcdoc</code>.</td></tr>
+<tr><td>No HTML injection sink</td><td>No <code>innerHTML</code> or <code>outerHTML</code>. The interface is built entirely with <code>createElement</code> / <code>textContent</code> / <code>appendChild</code>.</td></tr>
+<tr><td>No persistence</td><td>No <code>localStorage</code>, <code>sessionStorage</code>, IndexedDB, cookies, or Forge storage API.</td></tr>
+<tr><td>Least privilege</td><td>One scope, <code>read:page:confluence</code>. Read-only, and enforced by the platform rather than by my code.</td></tr>
+<tr><td>No privilege escalation</td><td>The page is read through the bridge under the calling user's own Confluence permissions. The 401/403 handling path confirms this: a user without view access gets a permission error, not someone else's content.</td></tr>
+</table>
+
+<h3>Spreadsheet formula injection — checked, does not apply</h3>
+
+<p>This is the first thing I would look for in any tool that exports user-supplied text
+to a spreadsheet, so it is worth recording why it is not a finding.</p>
+
+<p>The classic attack (CWE-1236) relies on a spreadsheet application parsing a leading
+<code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula. That
+happens with CSV, because the file is text and Excel re-parses it on open. This app does
+not emit CSV. Every text value is written into the worksheet XML as an inline string:</p>
+
+<pre>&lt;c r="A2" t="inlineStr"&gt;&lt;is&gt;&lt;t xml:space="preserve"&gt;…&lt;/t&gt;&lt;/is&gt;&lt;/c&gt;</pre>
+
+<p>A formula in OOXML lives in an <code>&lt;f&gt;</code> element. The writer never emits
+one. A cell containing <code>=cmd|' /c calc'!A1</code> is carried through and displayed as
+that literal text.</p>
+
+<p><b>Caveat I am not glossing over:</b> this protects the file as delivered. It does not
+protect a user who afterwards copies a cell and pastes it somewhere that does re-parse it,
+or who re-exports the sheet to CSV. That residual path is a property of spreadsheets, not
+of this app, and no exporter can close it.</p>
+
+<h3>Output encoding and file construction</h3>
+
+<ul>
+<li><b>XML:</b> <code>xmlEscape</code> escapes <code>&amp; &lt; &gt; " '</code> and strips
+the C0 control characters that XML 1.0 forbids. Without the second step a single
+<code>\u0001</code> pasted into a Confluence cell would produce a file Excel calls
+corrupt — a correctness bug that would have read as a security one.</li>
+<li><b>ZIP entry names:</b> hardcoded (<code>xl/worksheets/sheetN.xml</code> and
+friends). No user input reaches an archive path, so archive-path manipulation
+("zip slip") has no entry point.</li>
+<li><b>Sheet names:</b> sanitised through <code>sheetNames()</code> —
+<code>[ ] : * ? / \</code> removed, control characters stripped, truncated to Excel's
+31-character limit, de-duplicated case-insensitively, and never blank.</li>
+<li><b>Download filename:</b> <code>fileName()</code> strips path separators, Windows
+reserved characters and control characters, collapses whitespace, caps at 80 characters,
+and falls back to a fixed name when the result is empty.</li>
+</ul>
+
+<h3>A privacy control worth naming</h3>
+
+<p>The feedback link is a <code>mailto:</code>, not a form. The subject carries only which
+screen the user was on. The page, its title, its id and its cell contents are never
+included. This is a deliberate decision recorded in the source, and it is the kind of
+control that is easy to erode later by adding "just a little" telemetry to a feedback
+form. It should be treated as load-bearing.</p>
+
+<h2>4. Findings</h2>
+
+<h3 class="med">F-01 — Security policy claims two automated controls that are not implemented</h3>
+
+<table>
+<tr><th>Severity</th><td class="sev med">Medium</td></tr>
+<tr><th>CVSS</th><td><b>Not scored.</b> There is no exploitable condition here, so there
+is no honest vector to write. Assigning a CVSS score to a documentation defect would be
+theatre. The severity reflects contractual and reputational exposure, not attack
+feasibility.</td></tr>
+<tr><th>Location</th><td><code>security.html</code> §5, "Secure development"</td></tr>
+</table>
+
+<p><b>What the policy says:</b></p>
+
+<ul>
+<li>"The user interface is built with DOM calls only: no <code>innerHTML</code>, no inline
+script and no inline styles. <i>An automated test asserts this on every build</i>, so the
+Custom UI content-security constraints cannot be weakened by accident."</li>
+<li>"An automated test asserts that the shipped bundle contains no secrets."</li>
+</ul>
+
+<p><b>What is true:</b> both statements about the code are correct — the interface really
+does avoid <code>innerHTML</code> and inline script, and the bundle really does contain no
+secrets. <b>Neither automated test exists.</b> A search of the test suite for any
+assertion on <code>innerHTML</code>, inline content, or secret patterns returns nothing.
+The only match is a fixture string in an unrelated test.</p>
+
+<p><b>Why it matters, in two separate ways:</b></p>
+
+<ol>
+<li><b>Accuracy.</b> This policy is the document a customer's security review reads, and
+two of its sentences are not true today. That is the finding.</li>
+<li><b>The control's actual purpose is lost.</b> The sentence claims the test exists
+<i>so that the posture cannot be weakened by accident</i>. Today's code is clean; nothing
+stops tomorrow's from not being. The guarantee was never present.</li>
+</ol>
+
+<p><b>Reproduction:</b> from the repository root, search the test directory for any
+assertion on the claimed properties. No result.</p>
+
+<p><b>Recommended fix — implement the controls rather than soften the claim.</b> Both are
+small, and they are worth more as tests than as prose:</p>
+
+<pre>// 1. CSP posture: fail the build if the bundle reintroduces a sink
+const bundle = readFileSync('app/static/ui/build/main.js', 'utf8');
+for (const sink of ['innerHTML', 'outerHTML', 'insertAdjacentHTML',
+                    'document.write', 'eval(', 'new Function'])
+  assert(!bundle.includes(sink), `bundle contains ${sink}`);
+
+// 2. No secrets in the shipped bundle
+for (const pattern of [/ATATT[A-Za-z0-9_-]{10,}/, /-----BEGIN [A-Z ]*PRIVATE KEY/,
+                       /\b[A-Za-z0-9+/]{40,}={0,2}\b/])
+  assert(!pattern.test(bundle), 'possible secret in bundle');</pre>
+
+<p>Until they exist, the two sentences should be removed from the policy. Shipping the
+tests is the better of the two options and is perhaps an hour of work.</p>
+
+<div class="box">
+<p><b>Retest — 31 October 2026. Resolved.</b></p>
+<p>Both controls were implemented rather than the claim being softened.
+<code>test/test-bundle-safety.mjs</code> was added to the suite and runs with it. It adds
+<b>23 checks</b> against the build output — the file that actually reaches a customer's
+browser, which also covers anything arriving through <code>@forge/bridge</code>:</p>
+<ul>
+<li>seven script and HTML sinks (<code>innerHTML</code>, <code>outerHTML</code>,
+<code>insertAdjacentHTML</code>, <code>document.write</code>, <code>eval(</code>,
+<code>new Function</code>, <code>srcdoc</code>) must be absent from every shipped file;</li>
+<li>the shipped <code>index.html</code> must contain no inline script body, no inline
+<code>&lt;style&gt;</code>, no <code>style=""</code> attribute and no inline event
+handler;</li>
+<li>seven credential patterns (Atlassian API token, private key block, AWS access key id,
+GitHub token, JWT, Forge token variable, assigned secret literal) must not match;</li>
+<li>two checks assert that the scanner itself still fires on a known-bad string. A
+detector that cannot fail is not a control, and this is the check that catches a pattern
+quietly breaking.</li>
+</ul>
+<p>Verified by running the suite: 23 passed, 0 failed. The two sentences in §5 of the
+policy are now true. The deliberately narrow secret pattern is explained in the test's own
+comments — a scanner that cries wolf on every build is a scanner that gets deleted.</p>
+</div>
+
+<h3 class="med">F-02 — Licensing is enabled but the licence state is never checked</h3>
+
+<table>
+<tr><th>Severity</th><td class="sev med">Medium</td></tr>
+<tr><th>CVSS</th><td><b>Not scored.</b> This is unauthorised <i>use</i>, not unauthorised
+access. No customer data is exposed. The loss falls on the vendor.</td></tr>
+<tr><th>Location</th><td><code>app/manifest.yml</code>; <code>app/static/ui/src/index.js</code></td></tr>
+</table>
+
+<p>The manifest enables licensing:</p>
+
+<pre>app:
+  licensing:
+    enabled: true</pre>
+
+<p>Nothing in the application reads the result. A search for <code>license</code>,
+<code>licence</code>, <code>active</code> or <code>isActive</code> across the front end and
+the shared logic returns only a comment in the manifest. The comment is itself accurate
+and says so: <i>"Turning it on only exposes the licence state to the app; it does not gate
+anything by itself."</i></p>
+
+<p>Atlassian's own listing documentation describes the same division of labour: the
+manifest flag exposes the state, and the front end is expected to read
+<code>license.active</code> from the view context and decide what to do. This app never
+asks.</p>
+
+<p><b>Consequence:</b> a site whose 30-day trial has lapsed, or whose subscription has
+been cancelled, retains full functionality for as long as the app stays installed.</p>
+
+<p><b>What I could not verify, stated plainly:</b> I could not confirm from Atlassian's
+documentation whether the platform independently disables or uninstalls a Forge app when
+its subscription ends. If it does, the exposure is smaller than described. <b>I did not
+assume either answer.</b> This must be confirmed against current platform behaviour before
+anyone relies on it in either direction — including me.</p>
+
+<p><b>Recommended fix.</b> Read the licence state once, where the context is already being
+fetched, and render an unlicensed state instead of results:</p>
+
+<pre>const context = await view.getContext();
+const licensed = context?.license?.active === true;
+if (!licensed) return showUnlicensed();</pre>
+
+<p><b>One trap to avoid:</b> the property is <code>active</code> on the front end. An older
+form, <code>isActive</code>, appears in back-end resolver examples and has been reported as
+permanently <code>undefined</code> on the front end — which fails open silently, giving the
+appearance of a working check. Whichever is used must be verified against the live context
+shape, not copied from an example.</p>
+
+<h3 class="low">F-03 — No upper bound on client-side work for a very large page</h3>
+
+<table>
+<tr><th>Severity</th><td class="sev low">Low</td></tr>
+<tr><th>CVSS</th><td>Not scored. Self-inflicted availability only: the user must own or
+be able to view the page that harms their own browser tab. No cross-user impact.</td></tr>
+<tr><th>Location</th><td><code>core/</code> detectors; <code>flow.js</code></td></tr>
+</table>
+
+<p>The number of tables, rows and cells processed is unbounded. An 872 KB response was
+tested successfully, but nothing in the code refuses a pathological page, and all of the
+work happens synchronously in the user's tab. The realistic outcome is a frozen tab, not a
+compromise.</p>
+
+<p>The download path has a second, smaller case: when the Blob route fails, the fallback
+base64-encodes the entire workbook into a <code>data:</code> URL in memory.</p>
+
+<p><b>Recommended fix.</b> Cap the number of rows examined, and say so in the interface
+rather than silently truncating — a tool whose purpose is accuracy must never quietly
+check less than it appears to.</p>
+
+<h3 class="low">F-04 — DOM helper assigns arbitrary property names (latent sink)</h3>
+
+<table>
+<tr><th>Severity</th><td class="sev low">Low</td></tr>
+<tr><th>CVSS</th><td>Not scored. Not reachable in the current code. Recorded as defence in
+depth.</td></tr>
+<tr><th>Location</th><td><code>app/static/ui/src/index.js</code>, <code>el()</code></td></tr>
+</table>
+
+<p>The element helper ends with a catch-all assignment:</p>
+
+<pre>for (const [k, v] of Object.entries(props || {})) {
+  if (k === 'class') node.className = v;
+  else if (k === 'text') node.textContent = v;
+  else node[k] = v;          // &lt;-- any property name
+}</pre>
+
+<p>Every call site in the codebase passes literal keys, so this is <b>not exploitable
+today</b> and I am not claiming otherwise. But the helper is the single place the entire
+interface is built through, and a future key sourced from data — a column name, a value
+from a page — would make <code>node['innerHTML'] = …</code> reachable. The cost of closing
+it now is three lines.</p>
+
+<p><b>Recommended fix.</b> Replace the catch-all with an allow-list of the property names
+actually used (<code>href</code>, <code>onclick</code>, <code>type</code>,
+<code>role</code>), and throw on anything else.</p>
+
+<h3 class="info">F-05 — Published automated-check count has drifted from the suite</h3>
+
+<table>
+<tr><th>Severity</th><td class="sev info">Informational</td></tr>
+<tr><th>Location</th><td><code>security.html</code> §5; Marketplace listing; profile copy</td></tr>
+</table>
+
+<p>The published figure was <b>724</b> automated checks. On the revision reviewed, the suite
+reported <b>720</b> (719 passed; one build check could not execute in the review
+environment because of a filesystem permission, and is counted as present).</p>
+
+<p>Four checks is not a security issue. It matters because the number is offered as
+verifiable evidence, and a number anyone can run is a number that must be right. A figure
+that drifts quietly teaches a reader to discount the other figures.</p>
+
+<p><b>Recommended fix.</b> Either generate the number from the suite at release time, or
+publish it as a floor — "more than 700" — which stays true without maintenance.</p>
+
+<div class="box">
+<p><b>Retest — 31 October 2026. Partly resolved.</b></p>
+<p>With the 23 checks from F-01 added, the suite now reports <b>743</b>, and the published
+figure has been corrected to match. The number is accurate today.</p>
+<p><b>Still open:</b> the structural part. The figure is still maintained by hand, so it
+will drift again. The recommendation above stands, and this entry stays open until it is
+either generated at release time or published as a floor.</p>
+</div>
+
+<h2>5. What I looked for and did not find</h2>
+
+<p>Listing the negative results matters: it is the difference between a review and a list
+of whatever happened to turn up.</p>
+
+<ul>
+<li>Injection into the generated workbook (formula, XML, archive path) — addressed in
+section 3.</li>
+<li>HTML or script injection into the modal — no sink exists.</li>
+<li>Data exfiltration paths, including analytics, error reporting and telemetry — none
+present.</li>
+<li>Secrets committed to the repository or embedded in the shipped bundle — none found.</li>
+<li>Over-broad or write-capable Atlassian scopes — one read-only scope.</li>
+<li>Acting with permissions the calling user does not have — the read is performed as the
+user.</li>
+<li>Client-side storage of page content — none.</li>
+</ul>
+
+<h2>6. Dependencies</h2>
+
+<table>
+<tr><th>Dependency</th><th>Role</th><th>Note</th></tr>
+<tr><td><code>@forge/bridge</code></td><td>Runtime, direct</td><td>Atlassian's own. The only runtime dependency.</td></tr>
+<tr><td><code>esbuild</code></td><td>Build time</td><td>Does not ship to the browser.</td></tr>
+</table>
+
+<p>The .xlsx writer is hand-written rather than taken from a library. That is a real
+security decision and not only a preference: it keeps third-party code out of a customer's
+browser, at the cost of owning every bug in the format handling. Section 3 is where that
+trade is paid for.</p>
+
+<p><b>Limit:</b> the transitive tree was not audited in this review.</p>
+
+<h2>7. Limits of this review</h2>
+
+<ul>
+<li><b>The reviewer is the author.</b> I looked for problems in code I wrote, which is the
+weakest position from which to find them. An independent review would be worth more and I
+would not argue otherwise.</li>
+<li><b>Source review only.</b> No dynamic testing, no penetration testing, no fuzzing, no
+attack simulation against a live site.</li>
+<li><b>No certification.</b> I hold no OSCP, OSWE, CREST or equivalent. This document is
+an engineering review by a backend engineer, not a certified penetration test, and it
+should not be presented as one.</li>
+<li><b>One unresolved question</b>, recorded rather than guessed: platform behaviour when a
+Forge subscription lapses (F-02).</li>
+<li><b>Point in time.</b> Findings describe one revision. They say nothing about the next
+one — which is the entire argument for F-01.</li>
+</ul>
+
+<h2>8. Summary for a non-technical reader</h2>
+
+<p>The app was built in a way that removes most of the risk rather than managing it. It
+keeps no copy of your data, sends your data nowhere, and can only read — never change —
+the single page you open it on. Those are not promises in a document; they are properties
+of how it is built, and this review checked each one against the code.</p>
+
+<p>I found nothing an attacker could use.</p>
+
+<p>I found that <b>my own security policy claimed two safeguards I had not actually
+built</b>. The safeguards were meant to stop the app getting less safe in future, not to
+protect it today, and today's code is clean either way. But the claim was wrong, and I
+would rather you read that here than discover it yourself.</p>
+
+<p><b>That one is now fixed.</b> I wrote the two missing tests the same day and they run
+with every build, so the two sentences in the policy are true. I have left the finding in
+this document rather than deleting it: a review that removes what it found is not worth
+reading.</p>
+
+<p>Separately, the app does not currently check whether a customer's licence is still
+valid. That costs me money, not you.</p>
+
+<hr>
+<p>Table Audit &amp; Export for Confluence |
+<a href="docs.html">Documentation</a> |
+<a href="security.html">Security policy</a> |
+<a href="support.html">Support</a> |
+<a href="privacy.html">Privacy policy</a> |
+<a href="mailto:support@trunkle.win">support@trunkle.win</a></p>
+</body>
+</html>

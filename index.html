@@ -34,6 +34,20 @@ artefacts that decide whether a cutover happens: 7Rs disposition, target
 architecture, cutover runbook with rollback triggers, success criteria, risk
 register. Every parallel run returns a GO/NO-GO exit code.</li>
 </ul>
+
+<h2>Writing the regulation into the software</h2>
+<p>A peer-to-peer lending marketplace designed to Vietnam's fintech regulatory
+sandbox. The premise is that regulatory constraints are not business logic:
+they are states that must not exist and transitions that must not be
+reachable. Written that way they can be enforced once and proven by test,
+instead of being re-checked in every feature by whoever remembers.</p>
+<p><a href="https://github.com/mohoatu/p2p-lending"><strong>p2p-lending</strong></a>
+— specification first, then code derived from it. A traceability gate fails the
+build when a documented acceptance criterion has no test, and also when a test
+claims a requirement the documents no longer define. The ledger is append-only
+with no update path in the type, and reconciliation has no tolerance parameter
+at all. Evidence of each run is generated and committed, so what was proven can
+be read without reading the code.</p>
 <hr>
 <p><a href="mailto:support@trunkle.win">support@trunkle.win</a></p>
 </body>

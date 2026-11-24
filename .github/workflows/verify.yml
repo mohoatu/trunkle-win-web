@@ -1,0 +1,61 @@
+# The site is nine static pages. A link check is the whole of it.
+#
+# This is a tier C project in the fleet register: nothing elaborate is
+# demanded of it. But it is the page a recruiter opens before the CV, and the
+# page the Atlassian app's customers reach for its privacy and security
+# policies — so a dead link here is more expensive than its size suggests.
+
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    name: every internal link resolves
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # Internal links only. External ones are deliberately not checked: a
+      # third-party site being briefly down is not a defect in this
+      # repository, and a job that goes red for someone else's outage is a job
+      # people learn to ignore.
+      - name: Check internal hrefs
+        shell: python
+        run: |
+          import re, sys
+          from pathlib import Path
+
+          broken = []
+          checked = 0
+          for page in sorted(Path(".").rglob("*.html")):
+              if ".git" in page.parts:
+                  continue
+              text = page.read_text(encoding="utf-8")
+              for href in re.findall(r'href="([^"]+)"', text):
+                  if href.startswith(("http://", "https://", "mailto:", "#")):
+                      continue
+                  checked += 1
+                  target = (page.parent / href.split("#")[0]).resolve()
+                  if target.is_dir():
+                      target = target / "index.html"
+                  if not target.exists():
+                      broken.append(f"{page} -> {href}")
+
+          print(f"{checked} internal links checked across the site")
+          if broken:
+              print("\nBROKEN:")
+              for item in broken:
+                  print(" ", item)
+              sys.exit(1)
+          print("All of them resolve.")

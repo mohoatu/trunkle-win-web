@@ -30,7 +30,8 @@ footer{margin-top:2.5em;border-top:1px solid #e3e3e3;padding-top:1em;color:#555;
 <nav>
   <a href="#cv">CV</a>
   <a href="#work">Open source</a>
-  <a href="table-audit/">Table Audit for Confluence</a>
+  <a href="#private">Other projects</a>
+  <a href="table-audit/">Table Audit</a>
   <a href="mailto:mohoatu@gmail.com">Contact</a>
 </nav>
 
@@ -90,6 +91,35 @@ enforced once and proven by test.</p>
 test, and also when a test claims a requirement the documents no longer define. The
 ledger is append-only with no update path in the type, and reconciliation has no
 tolerance parameter at all. Evidence of each run is generated and committed.</p>
+
+<h2 id="private">Private projects — described, not published</h2>
+<p class="sub">Source not shared. Described here because the engineering decisions
+are the point.</p>
+
+<h3>Videogen <span class="when">— Vietnamese text to narrated video, entirely self-hosted</span></h3>
+<p>Turns a Vietnamese prompt, or a long document, into a short narrated video. The
+pipeline plans a scene breakdown with a local LLM, synthesises Vietnamese narration,
+generates an illustration per scene, builds timed subtitles, and assembles a subtitled
+MP4 with ffmpeg.</p>
+<p>The constraint that shaped it: <strong>no cloud AI provider</strong>. Everything runs
+locally or self-hosted — Ollama for planning, VieNeu-TTS for the voice, ComfyUI for the
+images. That matters for anyone whose content cannot leave their own machines. Every
+AI-backed stage degrades on its own terms: retry, fall back to a placeholder, or fail
+that one job with the stage and reason recorded, rather than failing the batch. Java.</p>
+
+<h3>Tiên Tửu <span class="when">— nine party games on one shared phone</span></h3>
+<p>A set of games for a table of friends, played by passing a single phone around. No
+cards, no props, nothing to install.</p>
+<p>The rules in <code>src/game/</code> are <strong>pure functions</strong>: state and a
+random generator in, new state out — no DOM, no timers, no platform SDK. Three things
+follow. Tests never wait: a bomb with an 8-to-34-second fuse is resolved instantly by
+asking the function, so the whole suite runs in under a second. Games of chance become
+checkable: a fixed seed reproduces a round exactly, which is the only way to answer
+whether a game is fair — and players <em>will</em> argue about that after the fourth
+drink. And changing platform does not mean rewriting the rules.</p>
+<p>342 automated checks, no dependencies at all. The README also states plainly what the
+UI tests <em>cannot</em> catch — a hidden button, text too small, a screen unreadable in
+a dim bar — because that is answered by one real evening out, not by a DOM shim.</p>
 
 <h2>Product</h2>
 <p><a href="table-audit/"><strong>Table Audit &amp; Export for Confluence</strong></a> —

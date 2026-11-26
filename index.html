@@ -20,6 +20,12 @@ nav a{margin-right:1em}
 .lede{font-size:1.08em}
 .when{color:#666;font-weight:400}
 footer{margin-top:2.5em;border-top:1px solid #e3e3e3;padding-top:1em;color:#555;font-size:.95em}
+/* The diagram carries small labels, so it is allowed out of the 42em prose
+   column and centred at up to 1000px — at column width its text would be
+   about six pixels tall and unreadable. */
+figure{margin:1.6em 0;padding:0;width:min(1000px,94vw);margin-left:calc(50% - min(500px,47vw))}
+figure img{width:100%;height:auto;border:1px solid #e3e3e3;border-radius:4px;background:#fff}
+figcaption{margin-top:.5em;color:#666;font-size:.88em}
 </style>
 </head>
 <body>
@@ -61,6 +67,46 @@ evidence of each run that someone who has never read the code can still read.</p
 </ul>
 
 <h2 id="work">Open source — things you can run</h2>
+
+<h3><a href="https://github.com/mohoatu/trunk-kuli">trunk-kuli</a>
+<span class="when">— a harness that outlives the model behind it</span></h3>
+<p>Two things break every time you change model. The assistant forgets who you
+are, because your instructions and your history live inside one vendor's
+product. And the discipline evaporates, because most "AI engineering process"
+is a pile of prompts — and a prompt is a request, not a guarantee.</p>
+<p><strong>A harness is not a prompt. A harness is a set of gates written in
+ordinary code, which the model's output must pass, and which are identical
+whichever model produced it.</strong> A gate that refuses a change when a
+documented acceptance criterion has no test is a program that reads files and
+exits non-zero. It does not need the model's cooperation.</p>
+
+<figure>
+  <img src="trunk-kuli-architecture.svg" alt="Architecture diagram: classified local files pass through a boundary that stamps and filters them before any model sees them; the model is one of several interchangeable providers; everything it produces must pass a wall of gates that are programs rather than prompts; and a trail records every action from outside the agent.">
+  <figcaption>Solid outlines are built and running; dashed are specified and not
+  yet built. <a href="trunk-kuli-architecture.svg">Open full size</a>.</figcaption>
+</figure>
+
+<p><a href="https://arxiv.org/abs/2603.24755">SlopCodeBench</a> measured what
+happens when agents repeatedly extend their own earlier work: the best agent
+passed 14.8% of checkpoints, structural erosion rose in 77% of trajectories,
+and against 473 open-source Python repositories the agent code was 2.3× more
+verbose and 2.0× more eroded. The finding this project turns on is that
+explicit quality guidance reduced the <em>starting</em> verbosity by up to a
+third <em>without affecting the rate of decay</em> — a prompt changes the
+intercept; only something measuring the trend can change the slope.</p>
+<p>So the two gates built first are the two nothing else does. A
+<strong>ratchet</strong> measures the repository and refuses any change that
+makes it worse — then names the measure and the functions carrying it, so the
+change can proceed by including the refactor that pays for it. And a
+<strong>review-cost</strong> gate treats slop as what it is: a ratio. Work that
+costs far less to produce than to review. A thousand lines serving one
+acceptance criterion is slop by arithmetic, whatever it contains.</p>
+<p>Alongside them, an <strong>audit trail written by something that is not the
+agent</strong> — because an agent logging itself produces a claim, not
+evidence. Append-only and hash-chained, storing fingerprints rather than
+contents, so it answers who changed what, when, to exactly which bytes without
+the audit log becoming the largest leak in the system.</p>
+<p>Running today across six repositories, holding each to its own baseline.</p>
 
 <h3><a href="https://github.com/mohoatu/migration-verify">migration-verify</a>
 <span class="when">— proving a rewrite kept the business logic</span></h3>

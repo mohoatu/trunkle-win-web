@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1128 600" width="1128" height="600" role="img" aria-labelledby="t d">
 <title id="t">trunk-kuli architecture</title>
 <desc id="d">Classified local files pass through a boundary that stamps and filters them before any model sees them. The model is one of several interchangeable providers. Everything it produces must pass a wall of gates that are programs rather than prompts. A trail records every action from outside the agent.</desc>
 
 <style>
-  .lbl { font: 11px/1.4 system-ui, -apple-system, Segoe UI, sans-serif; fill: #1d1d1d; }
-  .sm  { font: 9.5px system-ui, -apple-system, Segoe UI, sans-serif; fill: #5a5a5a; }
-  .hd  { font: 600 12.5px system-ui, -apple-system, Segoe UI, sans-serif; fill: #1d1d1d; letter-spacing: .02em; }
-  .ttl { font: 600 19px system-ui, -apple-system, Segoe UI, sans-serif; fill: #1d1d1d; }
-  .sub { font: 12.5px system-ui, -apple-system, Segoe UI, sans-serif; fill: #5a5a5a; }
+  .lbl { font: 10.5px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #1d1d1d; }
+  .sm  { font: 9px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #5a5a5a; }
+  .hd  { font: 600 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #1d1d1d; }
+  .ttl { font: 600 18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #1d1d1d; }
+  .sub { font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #5a5a5a; }
   .box { fill: #fff; stroke: #c8c8c8; stroke-width: 1.2; }
   .built { fill: #fff; stroke: #1d1d1d; stroke-width: 1.6; }
   .spec  { fill: #fff; stroke: #b4b4b4; stroke-width: 1.2; stroke-dasharray: 4 3; }
@@ -28,163 +28,160 @@
   </marker>
 </defs>
 
-<rect width="1000" height="600" fill="#fff"/>
+<rect width="1128" height="600" fill="#fff"/>
 
 <text x="20" y="30" class="ttl">trunk-kuli — the model is replaceable, the process is not</text>
 <text x="20" y="50" class="sub">A harness is not a prompt. A gate is a program that reads the repository and exits non-zero.</text>
 
-<!-- ─────────── 1. brain ─────────── -->
-<rect x="20" y="78" width="165" height="352" rx="4" class="panel"/>
-<text x="30" y="98" class="hd">1 · Brain, held locally</text>
+<!-- ─────────── 1 · brain ─────────── -->
+<rect x="20" y="78" width="190" height="352" rx="4" class="panel"/>
+<text x="32" y="98" class="hd">1 · Brain, held locally</text>
 
-<rect x="32" y="110" width="141" height="30" rx="3" class="box"/>
+<rect x="32" y="110" width="166" height="30" rx="3" class="box"/>
 <text x="42" y="124" class="lbl">L0 · public</text>
 <text x="42" y="135" class="sm">any provider</text>
 
-<rect x="32" y="146" width="141" height="30" rx="3" class="box"/>
+<rect x="32" y="146" width="166" height="30" rx="3" class="box"/>
 <text x="42" y="160" class="lbl">L1 · internal</text>
 <text x="42" y="171" class="sm">any provider</text>
 
-<rect x="32" y="182" width="141" height="30" rx="3" class="box"/>
+<rect x="32" y="182" width="166" height="30" rx="3" class="box"/>
 <text x="42" y="196" class="lbl">L2 · confidential</text>
 <text x="42" y="207" class="sm">local model only</text>
 
-<rect x="32" y="218" width="141" height="34" rx="3" class="built"/>
+<rect x="32" y="218" width="166" height="32" rx="3" class="built"/>
 <text x="42" y="232" class="lbl">L3 · secret</text>
-<text x="42" y="243" class="sm" style="fill:#c0392b">no model, ever</text>
+<text x="42" y="243" class="sm red">no model, ever</text>
 
-<text x="32" y="276" class="sm">Unclassified defaults to L2.</text>
-<text x="32" y="290" class="sm">Only a person may lower a level.</text>
+<text x="32" y="272" class="sm">Unclassified defaults to L2.</text>
+<text x="32" y="286" class="sm">Only a person may lower a level.</text>
 
-<rect x="32" y="306" width="141" height="46" rx="3" class="spec"/>
-<text x="42" y="322" class="lbl">Credential proxy</text>
-<text x="42" y="334" class="sm">holds L3, injects it into</text>
-<text x="42" y="345" class="sm">outgoing requests</text>
+<rect x="32" y="302" width="166" height="48" rx="3" class="spec"/>
+<text x="42" y="318" class="lbl">Credential proxy</text>
+<text x="42" y="331" class="sm">holds L3, injects it into</text>
+<text x="42" y="343" class="sm">outgoing requests</text>
 
 <!-- ─────────── boundary ─────────── -->
-<line x1="199" y1="72" x2="199" y2="440" class="bound"/>
-<text x="203" y="70" class="sm red">classification boundary</text>
+<line x1="223" y1="72" x2="223" y2="440" class="bound"/>
+<text x="228" y="70" class="sm red">classification boundary</text>
 
-<!-- ─────────── 2. assembler ─────────── -->
-<rect x="212" y="78" width="178" height="352" rx="4" class="panel"/>
-<text x="222" y="98" class="hd">2 · What a model may see</text>
+<!-- ─────────── 2 · what a model may see ─────────── -->
+<rect x="236" y="78" width="200" height="352" rx="4" class="panel"/>
+<text x="248" y="98" class="hd">2 · What a model may see</text>
 
-<rect x="224" y="112" width="154" height="74" rx="3" class="spec"/>
-<text x="234" y="130" class="lbl">Context assembler</text>
-<text x="234" y="145" class="sm">builds a bundle, stamped</text>
-<text x="234" y="157" class="sm">with its highest level</text>
-<text x="234" y="172" class="sm" style="fill:#c0392b">refuses — never downgrades</text>
+<rect x="248" y="112" width="176" height="76" rx="3" class="spec"/>
+<text x="258" y="129" class="lbl">Context assembler</text>
+<text x="258" y="144" class="sm">builds a bundle, stamped</text>
+<text x="258" y="156" class="sm">with its highest level</text>
+<text x="258" y="174" class="sm red">refuses — never downgrades</text>
 
-<rect x="224" y="208" width="154" height="86" rx="3" class="spec"/>
-<text x="234" y="226" class="lbl">Return-path check</text>
-<text x="234" y="241" class="sm">every tool result is</text>
-<text x="234" y="253" class="sm">classified again before it</text>
-<text x="234" y="265" class="sm">re-enters the context</text>
-<text x="234" y="282" class="sm" style="fill:#c0392b">the leak people forget</text>
+<rect x="248" y="206" width="176" height="88" rx="3" class="spec"/>
+<text x="258" y="223" class="lbl">Return-path check</text>
+<text x="258" y="238" class="sm">every tool result is</text>
+<text x="258" y="250" class="sm">classified again before it</text>
+<text x="258" y="262" class="sm">re-enters the context</text>
+<text x="258" y="281" class="sm red">the leak people forget</text>
 
-<text x="224" y="322" class="sm">A model does not leak by</text>
-<text x="224" y="335" class="sm">reading. It leaks by calling</text>
-<text x="224" y="348" class="sm">a tool and getting an answer.</text>
+<text x="248" y="320" class="sm">A model does not leak by</text>
+<text x="248" y="333" class="sm">reading. It leaks by calling</text>
+<text x="248" y="346" class="sm">a tool and getting an answer.</text>
 
-<!-- ─────────── 3. models ─────────── -->
-<rect x="412" y="78" width="168" height="352" rx="4" class="panel"/>
-<text x="422" y="98" class="hd">3 · Models, interchangeable</text>
+<!-- ─────────── 3 · models ─────────── -->
+<rect x="462" y="78" width="180" height="352" rx="4" class="panel"/>
+<text x="474" y="98" class="hd">3 · Models, interchangeable</text>
 
-<rect x="424" y="112" width="144" height="44" rx="3" class="chip"/>
-<text x="434" y="129" class="lbl">Claude Code</text>
-<text x="434" y="145" class="sm">agent product · wrapped · L1</text>
+<rect x="474" y="112" width="156" height="44" rx="3" class="chip"/>
+<text x="484" y="129" class="lbl">Claude Code</text>
+<text x="484" y="145" class="sm">agent product · wrapped · L1</text>
 
-<rect x="424" y="166" width="144" height="44" rx="3" class="chip"/>
-<text x="434" y="183" class="lbl">Gemini / Grok</text>
-<text x="434" y="199" class="sm">raw model · kuli's loop · L1</text>
+<rect x="474" y="166" width="156" height="44" rx="3" class="chip"/>
+<text x="484" y="183" class="lbl">Gemini / Grok</text>
+<text x="484" y="199" class="sm">raw model · kuli's loop · L1</text>
 
-<rect x="424" y="220" width="144" height="44" rx="3" class="chip"/>
-<text x="434" y="237" class="lbl">Local model</text>
-<text x="434" y="253" class="sm">loopback verified · L2</text>
+<rect x="474" y="220" width="156" height="44" rx="3" class="chip"/>
+<text x="484" y="237" class="lbl">Local model</text>
+<text x="484" y="253" class="sm">loopback verified · L2</text>
 
-<text x="424" y="288" class="sm">Two adapters, not five:</text>
-<text x="424" y="301" class="sm">everything else is a config row.</text>
+<text x="474" y="286" class="sm">Two adapters, not five:</text>
+<text x="474" y="299" class="sm">everything else is a config row.</text>
 
-<text x="424" y="326" class="sm">Swap any of these and nothing</text>
-<text x="424" y="339" class="sm">to the right of here changes.</text>
-<text x="424" y="358" class="sm">A provider is admitted only by</text>
-<text x="424" y="371" class="sm">being refused by the same gate,</text>
-<text x="424" y="384" class="sm">for the same reason, as the rest.</text>
+<text x="474" y="322" class="sm">Swap any of these and nothing</text>
+<text x="474" y="335" class="sm">to the right of here changes.</text>
+<text x="474" y="356" class="sm">A provider is admitted only by</text>
+<text x="474" y="369" class="sm">being refused by the same gate,</text>
+<text x="474" y="382" class="sm">for the same reason, as the rest.</text>
 
-<!-- ─────────── 4. gates ─────────── -->
-<rect x="606" y="78" width="188" height="352" rx="4" class="panel"/>
-<text x="616" y="98" class="hd">4 · Gates — code, not prompts</text>
+<!-- ─────────── 4 · gates ─────────── -->
+<rect x="668" y="78" width="234" height="352" rx="4" class="panel"/>
+<text x="680" y="98" class="hd">4 · Gates — code, not prompts</text>
 
-<rect x="618" y="110" width="164" height="30" rx="3" class="built"/>
-<text x="628" y="123" class="lbl">Ratchet</text>
-<text x="628" y="134" class="sm">nothing may get worse · built</text>
+<rect x="680" y="110" width="210" height="30" rx="3" class="built"/>
+<text x="690" y="123" class="lbl">Ratchet</text>
+<text x="690" y="134" class="sm">nothing may get worse · built</text>
 
-<rect x="618" y="146" width="164" height="30" rx="3" class="built"/>
-<text x="628" y="159" class="lbl">Review cost</text>
-<text x="628" y="170" class="sm">slop is a ratio · built</text>
+<rect x="680" y="146" width="210" height="30" rx="3" class="built"/>
+<text x="690" y="159" class="lbl">Review cost</text>
+<text x="690" y="170" class="sm">slop is a ratio · built</text>
 
-<rect x="618" y="182" width="164" height="26" rx="3" class="spec"/>
-<text x="628" y="199" class="lbl">Traceability · both directions</text>
+<rect x="680" y="182" width="210" height="26" rx="3" class="spec"/>
+<text x="690" y="199" class="lbl">Traceability · both directions</text>
 
-<rect x="618" y="214" width="164" height="26" rx="3" class="spec"/>
-<text x="628" y="231" class="lbl">Current API · installed version</text>
+<rect x="680" y="214" width="210" height="26" rx="3" class="spec"/>
+<text x="690" y="231" class="lbl">Current API · installed version</text>
 
-<rect x="618" y="246" width="164" height="26" rx="3" class="spec"/>
-<text x="628" y="263" class="lbl">Spec · test · scope · standard</text>
+<rect x="680" y="246" width="210" height="26" rx="3" class="spec"/>
+<text x="690" y="263" class="lbl">Spec · test · scope · standard</text>
 
-<rect x="618" y="278" width="164" height="26" rx="3" class="spec"/>
-<text x="628" y="295" class="lbl">Absence · what must not exist</text>
+<rect x="680" y="278" width="210" height="26" rx="3" class="spec"/>
+<text x="690" y="295" class="lbl">Absence · what must not exist</text>
 
-<rect x="618" y="310" width="164" height="26" rx="3" class="spec"/>
-<text x="628" y="327" class="lbl">Interface · rendered, not source</text>
+<rect x="680" y="310" width="210" height="26" rx="3" class="spec"/>
+<text x="690" y="327" class="lbl">Interface · rendered, not source</text>
 
-<text x="618" y="358" class="sm">Identical whichever model</text>
-<text x="618" y="371" class="sm">produced the work. They never</text>
-<text x="618" y="384" class="sm">learn which one did.</text>
+<text x="680" y="356" class="sm">Identical whichever model produced</text>
+<text x="680" y="369" class="sm">the work. They never learn which</text>
+<text x="680" y="382" class="sm">one did.</text>
 
-<!-- ─────────── 5. outcome ─────────── -->
-<rect x="816" y="78" width="164" height="352" rx="4" class="panel"/>
-<text x="826" y="98" class="hd">5 · What comes out</text>
+<!-- ─────────── 5 · what comes out ─────────── -->
+<rect x="928" y="78" width="180" height="352" rx="4" class="panel"/>
+<text x="940" y="98" class="hd">5 · What comes out</text>
 
-<rect x="828" y="112" width="140" height="46" rx="3" class="spec"/>
-<text x="838" y="130" class="lbl">Refused</text>
-<text x="838" y="145" class="sm">named, with the refactor</text>
+<rect x="940" y="112" width="156" height="44" rx="3" class="spec"/>
+<text x="950" y="129" class="lbl">Refused</text>
+<text x="950" y="145" class="sm">named, with the refactor</text>
 
-<rect x="828" y="170" width="140" height="58" rx="3" class="spec"/>
-<text x="838" y="188" class="lbl">Queued for a person</text>
-<text x="838" y="203" class="sm">10:00 and 16:00, batched,</text>
-<text x="838" y="215" class="sm">shown not described</text>
+<rect x="940" y="166" width="156" height="58" rx="3" class="spec"/>
+<text x="950" y="183" class="lbl">Queued for a person</text>
+<text x="950" y="198" class="sm">10:00 and 16:00, batched,</text>
+<text x="950" y="211" class="sm">shown not described</text>
 
-<rect x="828" y="240" width="140" height="46" rx="3" class="built"/>
-<text x="838" y="258" class="lbl">Evidence</text>
-<text x="838" y="273" class="sm">what was proven, committed</text>
+<rect x="940" y="234" width="156" height="44" rx="3" class="built"/>
+<text x="950" y="251" class="lbl">Evidence</text>
+<text x="950" y="267" class="sm">what was proven, committed</text>
 
-<text x="828" y="314" class="sm">Nothing irreversible happens</text>
-<text x="828" y="327" class="sm">without the owner — whichever</text>
-<text x="828" y="340" class="sm">provider asked.</text>
+<text x="940" y="304" class="sm">Nothing irreversible happens</text>
+<text x="940" y="317" class="sm">without the owner — whichever</text>
+<text x="940" y="330" class="sm">provider asked.</text>
 
 <!-- ─────────── flows ─────────── -->
-<path d="M185,170 L218,170" class="flow"/>
-<path d="M382,150 L418,150" class="flow"/>
-
-<path d="M418,242 L384,242" class="back"/>
-
-<path d="M580,196 L612,196" class="flow"/>
-
-<path d="M794,196 L822,196" class="flow"/>
+<path d="M210,170 L232,170" class="flow"/>
+<path d="M436,150 L458,150" class="flow"/>
+<path d="M458,242 L438,242" class="back"/>
+<path d="M642,196 L664,196" class="flow"/>
+<path d="M902,196 L924,196" class="flow"/>
 
 <!-- ─────────── trail ─────────── -->
-<rect x="20" y="458" width="960" height="76" rx="4" class="built"/>
-<text x="34" y="480" class="hd">Trail — written by something that is not the agent</text>
-<text x="34" y="500" class="sm">Append-only and hash-chained, so an entry cannot be edited or removed quietly. It stores fingerprints, not contents: a write is recorded as</text>
-<text x="34" y="514" class="sm">its path, size and SHA-256. That answers who changed what, when, to exactly which bytes — without the audit log becoming the largest leak</text>
-<text x="34" y="528" class="sm">in the system. Credentials are removed before anything is hashed. It records everything above and refuses nothing. · built</text>
+<rect x="20" y="458" width="1088" height="76" rx="4" class="built"/>
+<text x="34" y="479" class="hd">Trail — written by something that is not the agent</text>
+<text x="34" y="499" class="sm">Append-only and hash-chained, so an entry cannot be edited or removed quietly. It stores fingerprints, not contents: a write is recorded as its path,</text>
+<text x="34" y="513" class="sm">size and SHA-256. That answers who changed what, when, to exactly which bytes — without the audit log becoming the largest leak in the system.</text>
+<text x="34" y="527" class="sm">Credentials are removed before anything is hashed. It records everything above and refuses nothing. · built</text>
 
-<path d="M102,434 L102,454" class="flow"/>
-<path d="M300,434 L300,454" class="flow"/>
-<path d="M496,434 L496,454" class="flow"/>
-<path d="M700,434 L700,454" class="flow"/>
-<path d="M898,434 L898,454" class="flow"/>
+<path d="M115,434 L115,454" class="flow"/>
+<path d="M336,434 L336,454" class="flow"/>
+<path d="M552,434 L552,454" class="flow"/>
+<path d="M785,434 L785,454" class="flow"/>
+<path d="M1018,434 L1018,454" class="flow"/>
 
 <!-- ─────────── legend ─────────── -->
 <rect x="20" y="552" width="22" height="12" rx="2" class="built"/>

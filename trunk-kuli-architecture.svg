@@ -113,7 +113,7 @@
 
 <!-- ─────────── 4. gates ─────────── -->
 <rect x="606" y="78" width="188" height="352" rx="4" class="panel"/>
-<text x="616" y="98" class="hd">4 · Gates — programs, not prompts</text>
+<text x="616" y="98" class="hd">4 · Gates — code, not prompts</text>
 
 <rect x="618" y="110" width="164" height="30" rx="3" class="built"/>
 <text x="628" y="123" class="lbl">Ratchet</text>
@@ -166,13 +166,10 @@
 <!-- ─────────── flows ─────────── -->
 <path d="M185,170 L218,170" class="flow"/>
 <path d="M382,150 L418,150" class="flow"/>
-<text x="330" y="106" class="sm">bundle ≤ clearance</text>
 
 <path d="M418,242 L384,242" class="back"/>
-<text x="286" y="202" class="sm">tool call</text>
 
 <path d="M580,196 L612,196" class="flow"/>
-<text x="560" y="420" class="sm">the work</text>
 
 <path d="M794,196 L822,196" class="flow"/>
 
